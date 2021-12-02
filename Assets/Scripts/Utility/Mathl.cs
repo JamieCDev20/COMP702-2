@@ -60,7 +60,7 @@ public static class Mathl
     /// <returns></returns>
     public static float SkewedSin(float x, float skew, int dir)
     {
-        return NormalisedSin(Mathf.PI * x + (Sin(x)*(skew/dir))) * dir;
+        return NormalisedSin(Mathf.PI * x + (Sin(x) * (skew / dir))) * dir;
     }
     /// <summary>
     /// A nice Sin wave for a bit of wobble at either end
@@ -70,6 +70,56 @@ public static class Mathl
     public static float WobbleSin(float x)
     {
         return 0.33f * Sin(2.621f * Mathf.PI * x + -Mathf.PI) + (1.314f * x);
+    }
+
+    /// <summary>
+    /// Will set checkAgainst equal to toCheck if toCheck is less and then return
+    /// </summary>
+    /// <param name="checkAgainst"></param>
+    /// <param name="toCheck"></param>
+    /// <returns></returns>
+    public static bool IfLessThenSet(ref float checkAgainst, float toCheck)
+    {
+        if (checkAgainst > toCheck)
+        {
+            checkAgainst = toCheck;
+            return true;
+        }
+        return false;
+    }
+    public static bool IfLessThenSet(ref float checkAgainst, Vector3 toCheck)
+    {
+        if (checkAgainst * checkAgainst > toCheck.sqrMagnitude)
+        {
+            checkAgainst = toCheck.magnitude;
+            return true;
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Will set checkAgainst equal to toCheck if toCheck is more and then return
+    /// </summary>
+    /// <param name="checkAgainst"></param>
+    /// <param name="toCheck"></param>
+    /// <returns></returns>
+    public static bool IfMoreThenSet(ref float checkAgainst, float toCheck)
+    {
+        if (checkAgainst < toCheck)
+        {
+            checkAgainst = toCheck;
+            return true;
+        }
+        return false;
+    }
+    public static bool IfMoreThenSet(ref float checkAgainst, Vector3 toCheck)
+    {
+        if (checkAgainst * checkAgainst < toCheck.sqrMagnitude)
+        {
+            checkAgainst = toCheck.magnitude;
+            return true;
+        }
+        return false;
     }
 
 }

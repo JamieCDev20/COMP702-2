@@ -31,6 +31,31 @@ public static class Extensions
 
     #endregion
 
+    #region Collection
+
+    /// <summary>
+    /// Returns a random thing from the passed in array
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="_collection"></param>
+    /// <returns></returns>
+    public static T ChooseRandom<T>(this T[] _collection)
+    {
+        return _collection[Random.Range(0, _collection.Length)];
+    }
+    /// <summary>
+    /// Returns a random thing from the passed in list
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="_collection"></param>
+    /// <returns></returns>
+    public static T ChooseRandom<T>(this List<T> _collection)
+    {
+        return _collection[Random.Range(0, _collection.Count)];
+    }
+
+    #endregion
+
     #region Vector
 
     /// <summary>
@@ -106,6 +131,17 @@ public static class Extensions
     public static Vector2 ToVector2XZ(this Vector3 a)
     {
         return new Vector2(a.x, a.z);
+    }
+
+    /// <summary>
+    /// returns true if the magnitude of the vactor is smaller than the given magnitude
+    /// </summary>
+    /// <param name="a"></param>
+    /// <param name="magnitude"></param>
+    /// <returns></returns>
+    public static bool LessThan(this Vector3 a, float magnitude)
+    {
+        return a.sqrMagnitude < (magnitude * magnitude);
     }
 
     /// <summary>
