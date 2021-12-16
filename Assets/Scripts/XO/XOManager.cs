@@ -32,6 +32,7 @@ public class XOManager : MonoBehaviour
 
     private void UpdateBoard()
     {
+
         for (int i = 0; i < gameState.Length; i++)
         {
             for (int j = 0; j < gameState[i].Length; j++)
@@ -43,6 +44,20 @@ public class XOManager : MonoBehaviour
             }
         }
     }
+
+    private int CheckDifference()
+    {
+        int diff = 0;
+        for (int i = 0; i < gameState.Length; i++)
+        {
+            for (int j = 0; j < gameState[i].Length; j++)
+            {
+                if (gameState[i][j] != -1)
+                    diff++;
+            }
+        }
+        return diff;
+    } 
 
     public void ResetBoard()
     {

@@ -10,7 +10,10 @@ public class Test : MonoBehaviour
 
     private void Start()
     {
-        print(f / i);
+        for (int i = 0; i < 15; i++)
+        {
+            print((char)(65+ (i%6)));
+        }
     }
 
 }

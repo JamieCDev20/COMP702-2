@@ -6,88 +6,77 @@ public class MCTS : MonoBehaviour
 {
 
     private Node no_rootNode;
-
     private Node no_currentNode;
 
-    private const int i_rolloutLimit = 10;
-    private const int i_iterationLimit = 5;
-    private const int i_iterationBatchSize = 2;
-    private const float f_timeLimit = 1f;
-
-    private int playerNumber = 0;
+    private int i_playerNumber = 0;
 
     private void Start()
     {
-        UpdateState();
-        StartCoroutine(SelfPlay());
-
+        StartCoroutine(GoForIt());
     }
 
-    IEnumerator SelfPlay()
+
+    IEnumerator GoForIt()
     {
-        yield return new WaitForSeconds(1);
-        for (int i = 0; i < 8; i++)
+        while (true)
         {
-            StartCoroutine(RunIterations());
-            yield return new WaitForSeconds(0.3f);
-            MakeMove();
-            yield return new WaitForSeconds(0.2f);
             UpdateState();
+            for (int i = 0; i < 50; i++)
+            {
+                print("performing iteration: " + i);
+                Iterate();
+
+            }
+            print("Finished iterations");
+            yield return null;
+            MakeMove();
         }
     }
 
     public void MakeMove()
     {
+        print("making move");
+
         State nextState = GetCurrentBestAction();
 
-        State.ActOnWorld(playerNumber, State.GetActionFromStateChange(no_rootNode.GetState(), nextState));
+        print("Got best action");
+        TPAEnvironment.x.ActOnWorld(((TPAState)nextState).vA_playerPositions);
 
-        playerNumber = 1 - playerNumber;
-        
+        print("Acted in world");
+        i_playerNumber = i_playerNumber++ % TPAEnvironment.x.playerCount;
+
     }
 
     public void UpdateState()
     {
-        no_rootNode = new Node(null, State.GetStateFromWorld());
-        StartCoroutine(RunIterations());
-    }
 
-    IEnumerator RunIterations()
-    {
-        float startTime = Time.realtimeSinceStartup;
-        int its = 0;
+        print("Updated State");
+        no_rootNode = new Node(null, new TPAState(), i_playerNumber, 0, 0);
 
-        while (Time.realtimeSinceStartup - startTime < f_timeLimit)
-        {
-            for (int i = 0; i < i_iterationBatchSize; i++)
-            {
-
-                Iterate();
-                its++;
-                if (its >= i_iterationLimit)
-                    startTime -= f_timeLimit * 2;
-                    
-            }
-            yield return null;
-        }
+        //StartCoroutine(RunIterations());
     }
 
     private void Iterate()
     {
         no_currentNode = no_rootNode;
         float rolloutValue = 0;
-
+        print("Select");
         //Selection - Search the tree for a node with the highest UCB value
         Select();
 
+        print("Expand");
         //Expansion - Get to an unexplored child node by adding the next states onto a node that has already been explored
         Expand();
 
         //Rollout - Do a random playout from this state to a terminal state
-        rolloutValue = Rollout();
+        print("Rollout");
+        rolloutValue = Rollout(i_playerNumber);
 
         //Backprop - Propagate back up the tree and adjust the number of visits and the total value
+        print("Backprop");
         BackProp(rolloutValue);
+
+        //Debug.Log($"Iteration Completed. \n Root node stats: \nvisits: {no_rootNode.GetVisits()} Value: {no_rootNode.GetAvgVal}");
 
     }
 
@@ -99,47 +88,39 @@ public class MCTS : MonoBehaviour
 
     private void Select()
     {
+        Node curNode = no_rootNode;
 
-        if(no_currentNode.GetChildCount() != 0)
+        while (curNode.GetChildCount() > 0)
         {
-            no_currentNode = no_currentNode.GetMaxUCBChild();
-            Select();
-            return;
+            curNode = curNode.GetMaxUCBChild();
         }
-        return;
-
+        no_currentNode = curNode;
     }
 
     private void Expand()
     {
-        if (no_currentNode.GetVisits() != 0)
+        if (no_currentNode.GetVisits > 0)
         {
-            no_currentNode.GenerateChildren(playerNumber);
+            no_currentNode.GenerateChildren();
             no_currentNode = no_currentNode.GetMaxUCBChild();
         }
     }
 
-    private float Rollout()
+    private float Rollout(int _player)
     {
-        State curSimmedState = no_currentNode.GetState();
-
-        for (int i = 0; i < i_rolloutLimit; i++)
+        State curState = no_currentNode.GetState();
+        for (int i = 0; i < 6; i++)
         {
-            if (curSimmedState.terminal)
-                return curSimmedState.GetStateValue(playerNumber);
-
-            curSimmedState = curSimmedState.Simulate(playerNumber, curSimmedState.GetAvailableActions().ChooseRandom());
-
+            curState = curState.Simulate((_player + i) % TPAEnvironment.x.playerCount, ((Vector3[])curState.GetAvailableActions()).ChooseRandom());
         }
 
-        return 0;
+        return ((TPAState)curState).GetStateValue(_player);
     }
 
     private void BackProp(float delta)
     {
-        Node cur = no_currentNode;
-        while (cur != null)
-            cur = cur.Propagate(delta);
+        Node curNode = no_currentNode;
+        curNode.Propagate(delta);
     }
 
 }
