@@ -9,25 +9,26 @@ public class MCTS : MonoBehaviour
     private Node no_currentNode;
 
     private int i_playerNumber = 0;
+    [SerializeField] private int i_mctsIterations = 150;
+    [SerializeField] private int i_rolloutDepth = 6;
 
     private void Start()
     {
         StartCoroutine(GoForIt());
     }
 
-
     IEnumerator GoForIt()
     {
         while (true)
         {
             UpdateState();
-            for (int i = 0; i < 50; i++)
+            for (int i = 0; i < i_mctsIterations; i++)
             {
-                print("performing iteration: " + i);
+                //print("performing iteration: " + i);
                 Iterate();
 
             }
-            print("Finished iterations");
+            //print("Finished iterations");
             yield return null;
             MakeMove();
         }
@@ -35,22 +36,23 @@ public class MCTS : MonoBehaviour
 
     public void MakeMove()
     {
-        print("making move");
+        //print("making move");
 
         State nextState = GetCurrentBestAction();
 
-        print("Got best action");
+        //print("Got best action");
         TPAEnvironment.x.ActOnWorld(((TPAState)nextState).vA_playerPositions);
 
-        print("Acted in world");
-        i_playerNumber = i_playerNumber++ % TPAEnvironment.x.playerCount;
+        //print("Acted in world");
+        i_playerNumber = (i_playerNumber + 1) % TPAEnvironment.x.playerCount;
+        //Debug.Log(i_playerNumber);
 
     }
 
     public void UpdateState()
     {
 
-        print("Updated State");
+        //print("Updated State");
         no_rootNode = new Node(null, new TPAState(), i_playerNumber, 0, 0);
 
         //StartCoroutine(RunIterations());
@@ -60,20 +62,20 @@ public class MCTS : MonoBehaviour
     {
         no_currentNode = no_rootNode;
         float rolloutValue = 0;
-        print("Select");
+        //print("Select");
         //Selection - Search the tree for a node with the highest UCB value
         Select();
 
-        print("Expand");
+        //print("Expand");
         //Expansion - Get to an unexplored child node by adding the next states onto a node that has already been explored
         Expand();
 
         //Rollout - Do a random playout from this state to a terminal state
-        print("Rollout");
+        //print("Rollout");
         rolloutValue = Rollout(i_playerNumber);
 
         //Backprop - Propagate back up the tree and adjust the number of visits and the total value
-        print("Backprop");
+        //print("Backprop");
         BackProp(rolloutValue);
 
         //Debug.Log($"Iteration Completed. \n Root node stats: \nvisits: {no_rootNode.GetVisits()} Value: {no_rootNode.GetAvgVal}");
@@ -82,7 +84,7 @@ public class MCTS : MonoBehaviour
 
     private State GetCurrentBestAction()
     {
-        Node bestValNode = no_rootNode.GetMaxValueChild();
+        Node bestValNode = no_rootNode.GetMaxVisitedChild();
         return bestValNode.GetState();
     }
 
@@ -109,7 +111,7 @@ public class MCTS : MonoBehaviour
     private float Rollout(int _player)
     {
         State curState = no_currentNode.GetState();
-        for (int i = 0; i < 6; i++)
+        for (int i = 0; i < i_rolloutDepth - no_currentNode.GetDepth; i++)
         {
             curState = curState.Simulate((_player + i) % TPAEnvironment.x.playerCount, ((Vector3[])curState.GetAvailableActions()).ChooseRandom());
         }

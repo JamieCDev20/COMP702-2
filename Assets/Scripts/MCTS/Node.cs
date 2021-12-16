@@ -11,10 +11,13 @@ public class Node
     private Node no_parent;
     private Node[] noA_children = new Node[0];
     private State st_nodeState;
+    private const float explorationValue = 0.5f;
 
     private float f_value = 0;
     private int i_visits = 0;
     private int i_player;
+
+    public int GetDepth { get { return depth; } }
 
     public int GetVisits { get { return i_visits; } }
 
@@ -56,7 +59,7 @@ public class Node
     public Node GetMaxUCBChild()
     {
         int maxIndex = -1;
-        float maxV = -1;
+        float maxV = -Mathf.Infinity;
 
         for (int i = 0; i < noA_children.Length; i++)
         {
@@ -69,24 +72,29 @@ public class Node
         }
 
         if (maxIndex == -1)
-            return this;
+            throw new System.Exception("UCB value error");
 
         return noA_children[maxIndex];
     }
 
-    public Node GetMaxValueChild()
+    public Node GetMaxVisitedChild()
     {
-        float maxV = -1000;
+        float maxV = -Mathf.Infinity;
         int maxI = -1;
 
         for (int i = 0; i < noA_children.Length; i++)
         {
+            //Debug.Log($"Node: {noA_children[i].nodeName} | visits: {noA_children[i].GetVisits} | value: {noA_children[i].GetAvgVal}");
+
             if (Mathl.IfMoreThenSet(ref maxV, noA_children[i].GetVisits))
                 maxI = i;
         }
 
         if (maxI == -1)
-            return this;
+            throw new System.Exception("Max visit error");
+
+        //Debug.Log($"Chosen Node: {noA_children[maxI].nodeName}");
+
         return noA_children[maxI];
 
     }
@@ -94,7 +102,7 @@ public class Node
     private float CalculateChildUCB(Node child)
     {
         //return 0;
-        return child.GetAvgVal + Mathf.Sqrt(2 * Mathf.Log(i_visits) / child.GetVisits);
+        return child.GetAvgVal + explorationValue * Mathf.Sqrt(Mathf.Log(i_visits) / child.GetVisits);
     }
 
     public Node[] GenerateChildren()
@@ -134,9 +142,9 @@ public class Node
         f_value += delta;
         i_visits++;
         //Debug.Log(num);
-        //if (no_parent == null)
-        //    return;
-        //no_parent.Propagate(delta);
+        if (no_parent == null)
+            return;
+        no_parent.Propagate(delta);
     }
 
     private void SetVisits(int val)

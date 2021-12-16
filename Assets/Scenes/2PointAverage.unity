@@ -152,7 +152,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3837058959f13b4439b074ee27055d5a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 1
+  moveSpeed: 5
   playerCount: 2
   players:
   - {fileID: 759489514}
@@ -663,6 +663,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5fb27a38ee2651b4898a76dde5bfbb8f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  i_mctsIterations: 1000
+  i_rolloutDepth: 2
 --- !u!4 &1235509232
 Transform:
   m_ObjectHideFlags: 0

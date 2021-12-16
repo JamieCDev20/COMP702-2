@@ -57,6 +57,7 @@ public class TPAState : State
     {
 
         TPAState newState = (TPAState)this.MemberwiseClone();
+        newState.vA_playerPositions = (Vector3[])vA_playerPositions.Clone();
 
         newState.MovePlayer(playerCount, (Vector3)action);
 
