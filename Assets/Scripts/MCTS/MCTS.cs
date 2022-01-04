@@ -8,12 +8,15 @@ public class MCTS : MonoBehaviour
     private Node no_rootNode;
     private Node no_currentNode;
 
+    private Node no_bestValueNode;
+
     private int i_playerNumber = 0;
     [SerializeField] private int i_mctsIterations = 150;
     [SerializeField] private int i_rolloutDepth = 6;
 
     private void Start()
     {
+        no_bestValueNode = new Node(null, new AnimState(), i_playerNumber, 0, 0);
         StartCoroutine(GoForIt());
     }
 
@@ -41,10 +44,11 @@ public class MCTS : MonoBehaviour
         State nextState = GetCurrentBestAction();
 
         //print("Got best action");
-        TPAEnvironment.x.ActOnWorld(((TPAState)nextState).vA_playerPositions);
+        AnimState state = (AnimState)nextState;
+        AnimEnvironment.x.ActOnWorld((state.FootPositions, state.HandPositions));
 
         //print("Acted in world");
-        i_playerNumber = (i_playerNumber + 1) % TPAEnvironment.x.playerCount;
+        i_playerNumber = (i_playerNumber + 1) % AnimEnvironment.x.playerCount;
         //Debug.Log(i_playerNumber);
 
     }
@@ -53,8 +57,10 @@ public class MCTS : MonoBehaviour
     {
 
         //print("Updated State");
-        no_rootNode = new Node(null, new TPAState(), i_playerNumber, 0, 0);
-
+        no_rootNode = new Node(null, new AnimState(), i_playerNumber, 0, 0);
+        //no_rootNode = no_bestValueNode;
+        //no_rootNode.ClearParent();
+        //Debug.Log("New root: " + no_rootNode.nodeName);
         //StartCoroutine(RunIterations());
     }
 
@@ -85,6 +91,7 @@ public class MCTS : MonoBehaviour
     private State GetCurrentBestAction()
     {
         Node bestValNode = no_rootNode.GetMaxVisitedChild();
+        no_bestValueNode = bestValNode;
         return bestValNode.GetState();
     }
 
@@ -110,13 +117,17 @@ public class MCTS : MonoBehaviour
 
     private float Rollout(int _player)
     {
-        State curState = no_currentNode.GetState();
+        AnimState curState = (AnimState)no_currentNode.GetState();
+
         for (int i = 0; i < i_rolloutDepth - no_currentNode.GetDepth; i++)
         {
-            curState = curState.Simulate((_player + i) % TPAEnvironment.x.playerCount, ((Vector3[])curState.GetAvailableActions()).ChooseRandom());
+            //Debug.Log((_player + i) % AnimEnvironment.x.playerCount);
+            (Vector3[] f, Vector3[] h) lastPos = (curState.FootPositions, curState.HandPositions);
+            curState = (AnimState)curState.Simulate((_player + i) % AnimEnvironment.x.playerCount, ((Vector3[])curState.GetAvailableActions()).ChooseRandom());
+            curState.SetLastLimbPositions(lastPos.f, lastPos.h);
         }
 
-        return ((TPAState)curState).GetStateValue(_player);
+        return ((AnimState)curState).GetStateValue(_player);
     }
 
     private void BackProp(float delta)

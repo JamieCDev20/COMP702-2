@@ -19,6 +19,8 @@ public class Node
 
     public int GetDepth { get { return depth; } }
 
+    public int GetWidth { get { return width; } }
+
     public int GetVisits { get { return i_visits; } }
 
     public float GetAvgVal { get { return (float)(f_value / i_visits); } }
@@ -49,6 +51,16 @@ public class Node
         depth = d;
         width = w;
         nodeName = $"{depth}{(char)(65 + w)}";
+    }
+
+    public void ClearParent()
+    {
+        no_parent = null;
+    }
+
+    public Node[] GetChildren()
+    {
+        return noA_children;
     }
 
     public void SetChildren(Node[] newChildren)
@@ -111,9 +123,11 @@ public class Node
         Vector3[] actions = (Vector3[])st_nodeState.GetAvailableActions();
         List<Node> newChildren = new List<Node>();
 
+        Transform player = AnimEnvironment.x.GetPlayer(i_player);
+
         for (int i = 0; i < actions.Length; i++)
         {
-            newChildren.Add(new Node(this, (TPAState)st_nodeState.Simulate(i_player, actions[i]), (i_player + 1)%TPAEnvironment.x.playerCount, depth+1, i));
+            newChildren.Add(new Node(this, (AnimState)st_nodeState.Simulate(i_player, actions[i]), (i_player + 1) % AnimEnvironment.x.playerCount, depth + 1, i));
         }
 
         noA_children = newChildren.ToArray();

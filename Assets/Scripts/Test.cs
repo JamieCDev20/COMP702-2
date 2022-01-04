@@ -10,9 +10,11 @@ public class Test : MonoBehaviour
 
     private void Start()
     {
-        for (int i = 0; i < 15; i++)
+        int fl = 5;
+        int hl = 10;
+        for (int f = 0, h = 0; f < 5 || h < 10; f = Mathf.Clamp(f + 1, 0, fl), h = Mathf.Clamp(h + 1, 0, hl))
         {
-            print((char)(65+ (i%6)));
+            print(f + " " + h);
         }
     }
 
